@@ -1,0 +1,157 @@
+{{- $root := . -}} # To load values from file outside of range loop
+
+{{- if .Values.arr_elements }}
+  {{- range $k, $v := .Values.arr_elements }}
+  {{- if $v.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: usenet
+    run: {{ $k }}
+  name: {{ $k }}
+  namespace: {{ $root.Values.common.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: usenet
+      run: {{ $k }}
+  template:
+    metadata:
+      labels:
+        app: usenet
+        run: {{ $k }}
+    spec:
+      hostname: {{ $k }}
+      containers:
+      - env:
+        - name: TZ
+          value: {{ $root.Values.common.timezone }}
+{{- if eq $k "sabnzbd" }}
+        - name: SABNZBD_UID
+          value: {{ $root.Values.common.PUID | quote }}
+        - name: SABNZBD_GID
+          value: {{ $root.Values.common.PUID | quote }}
+{{- else }}
+        - name: PUID
+          value: {{ $root.Values.common.PUID | quote }}
+        - name: PGID
+          value: {{ $root.Values.common.PGID | quote }}
+{{- end }}
+        image: linuxserver/{{ $k }}:{{ .image_tag }}
+        name: {{ $k }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: {{ .webui_port }}
+          name: webui
+{{- if eq $k "deluge" }}
+        - containerPort: {{ .torrent_port }}
+          name: torrent-tcp
+          protocol: TCP
+        - containerPort: {{ .torrent_port }}
+          name: torrent-udp
+          protocol: UDP
+{{- end }}
+{{- if (or (eq $k "sonarr") (eq $k "radarr")) }}
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - curl "http://localhost:{{ .webui_port }}/api/system/status?ApiKey=$(sed -ne '/ApiKey/{s/.*<ApiKey>\(.*\)<\/ApiKey>.*/\1/p;q;}' < /config/config.xml)"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - curl "http://localhost:{{ .webui_port }}/api/health?ApiKey=$(sed -ne '/ApiKey/{s/.*<ApiKey>\(.*\)<\/ApiKey>.*/\1/p;q;}' < /config/config.xml)"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+{{- end }}
+        volumeMounts:
+        - mountPath: /config
+          name: usenet-config
+          subPath: {{ $k }}
+{{- if (or (eq $k "sonarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge")) }}
+        - mountPath: /tv
+          name: usenet-media
+          subPath: media/tv
+{{- end }}
+{{- if (or (eq $k "radarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge")) }}
+        - mountPath: /movies
+          name: usenet-media
+          subPath: media/movies
+{{- end }}
+{{- if eq $k "sabnzbd" }}
+        - mountPath: /incomplete-downloads
+          name: usenet-ssd
+          subPath: incomplete
+{{- end }}
+{{- if (or (eq $k "sonarr") (eq $k "radarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge")) }}
+        - mountPath: /downloads
+          name: usenet-media
+          subPath: downloads
+{{- end }}
+      initContainers:
+      - command: ["/bin/sh", "-c"]
+        args:
+          - chown -R 1000:1000 /config;
+{{- if (or (eq $k "sonarr") (eq $k "sabnzbd") (eq $k "deluge") (eq $k "bazarr")) }}
+            chown -R 1000:1000 /tv;
+{{- end }}
+{{- if (or (eq $k "radarr") (eq $k "sabnzbd") (eq $k "deluge") (eq $k "bazarr")) }}
+            chown -R 1000:1000 /movies;
+{{- end }}
+            echo start;[[ ! -f /config/config.xml ]] && echo '<Config><UrlBase>/</UrlBase></Config>'> /config/config.xml;echo end;
+        image: busybox
+        name: chown-config
+        volumeMounts:
+        - mountPath: /config
+          name: usenet-config
+          subPath: {{ $k }}
+{{- if (or (eq $k "sonarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge")) }}
+        - mountPath: /tv
+          name: usenet-media
+          subPath: media/tv
+{{- end }}
+{{- if (or (eq $k "radarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge")) }}
+        - mountPath: /movies
+          name: usenet-media
+          subPath: media/movies
+{{- end }}
+{{- if eq $k "sabnzbd" }}
+        - mountPath: /incomplete-downloads
+          name: usenet-ssd
+          subPath: incomplete
+{{- end }}
+{{- if (or (eq $k "sonarr") (eq $k "radarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge")) }}
+        - mountPath: /downloads
+          name: usenet-media
+          subPath: downloads
+{{- end }}
+        securityContext:
+          runAsGroup: 1000
+          runAsUser: 1000
+      securityContext:
+        fsGroup: 1000
+      volumes:
+      - hostPath:
+          path: /storagebox
+          type: DirectoryOrCreate
+        name: usenet-media
+      - hostPath:
+          path: /opt/usenet/config
+          type: DirectoryOrCreate
+        name: usenet-config
+      - hostPath:
+          path: /ssd-bin
+          type: DirectoryOrCreate
+        name: usenet-ssd
+
+  {{- end }}
+  {{- end }}
+{{- end }}

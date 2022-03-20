@@ -1,0 +1,32 @@
+{{- $root := . -}} # To load values from file outside of range loop
+
+{{- if .Values.arr_elements }}
+  {{- range $k, $v := .Values.arr_elements }}
+  {{- if $v.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app: usenet
+  annotations:
+    kubernetes.io/ingress.class: traefik
+  name: {{ $k }}-ingress
+  namespace: {{ $root.Values.common.namespace }}
+spec:
+#   ingressClassName: traefik
+  rules:
+  - host: {{ .ingress_url }}
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: {{ $k }}-service
+            port:
+              number: {{ .ingress_port }}
+
+  {{- end }}
+  {{- end }}
+{{- end }}

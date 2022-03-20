@@ -1,0 +1,56 @@
+arr_elements:
+  sonarr:
+    enabled: true
+    webui_port: 8989
+    image_tag: amd64-latest
+    ingress_url: sonarr.mallia.mt
+    ingress_port: 80
+
+  radarr:
+    enabled: true
+    webui_port: 7878
+    image_tag: amd64-latest
+    ingress_url: radarr.mallia.mt
+    ingress_port: 80
+
+  readarr:
+    enabled: false
+    webui_port: 8787
+    image_tag: amd64-develop
+    ingress_url: readarr.mallia.mt
+    ingress_port: 80
+
+  bazarr:
+    enabled: false
+    webui_port: 6767
+    image_tag: amd64-latest
+    ingress_url: bazarr.mallia.mt
+    ingress_port: 80
+
+  prowlarr:
+    enabled: true
+    webui_port: 9696
+    image_tag: develop
+    ingress_url: prowlarr.mallia.mt
+    ingress_port: 80
+
+  sabnzbd:
+    enabled: true
+    webui_port: 8080
+    image_tag: amd64-latest
+    ingress_url: sabnzbd.mallia.mt
+    ingress_port: 80
+
+  deluge:
+    enabled: true
+    webui_port: 8112
+    torrent_port: 58846
+    image_tag: amd64-latest
+    ingress_url: deluge.mallia.mt
+    ingress_port: 80
+
+common:
+  namespace: usenet
+  timezone: Europe/Rome
+  PUID: 1000
+  PGID: 1000
