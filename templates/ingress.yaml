@@ -9,12 +9,10 @@ kind: Ingress
 metadata:
   labels:
     app: usenet
-  annotations:
-    kubernetes.io/ingress.class: traefik
   name: {{ $k }}-ingress
   namespace: {{ $root.Values.common.namespace }}
 spec:
-#   ingressClassName: traefik
+  ingressClassName: nginx
   rules:
   - host: {{ .ingress_url }}
     http:
