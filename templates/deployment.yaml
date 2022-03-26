@@ -137,6 +137,8 @@ spec:
           runAsGroup: 0
           runAsUser: 0
       securityContext:
+        runAsGroup: 1000
+        runAsUser: 1000  
         fsGroup: 1000
       volumes:
       - hostPath:
