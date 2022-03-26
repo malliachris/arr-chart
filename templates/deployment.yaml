@@ -134,8 +134,9 @@ spec:
           subPath: downloads
 {{- end }}
         securityContext:
-          runAsGroup: 1000
-          runAsUser: 1000
+          runAsGroup: 0
+          runAsUser: 0
+          fsGroup: 0
       securityContext:
         fsGroup: 1000
       volumes:
