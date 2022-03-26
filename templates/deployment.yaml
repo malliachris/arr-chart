@@ -34,12 +34,12 @@ spec:
 #           value: {{ $root.Values.common.PUID | quote }}
 #         - name: SABNZBD_GID
 #           value: {{ $root.Values.common.PUID | quote }}
-{{- else }}
+# {{- else }}
         - name: PUID
           value: {{ $root.Values.common.PUID | quote }}
         - name: PGID
           value: {{ $root.Values.common.PGID | quote }}
-{{- end }}
+# {{- end }}
         image: linuxserver/{{ $k }}:{{ .image_tag }}
         name: {{ $k }}
         imagePullPolicy: Always
