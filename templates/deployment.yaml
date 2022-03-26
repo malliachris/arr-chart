@@ -29,11 +29,11 @@ spec:
       - env:
         - name: TZ
           value: {{ $root.Values.common.timezone }}
-{{- if eq $k "sabnzbd" }}
-        - name: SABNZBD_UID
-          value: {{ $root.Values.common.PUID | quote }}
-        - name: SABNZBD_GID
-          value: {{ $root.Values.common.PUID | quote }}
+# {{- if eq $k "sabnzbd" }}
+#         - name: SABNZBD_UID
+#           value: {{ $root.Values.common.PUID | quote }}
+#         - name: SABNZBD_GID
+#           value: {{ $root.Values.common.PUID | quote }}
 {{- else }}
         - name: PUID
           value: {{ $root.Values.common.PUID | quote }}
