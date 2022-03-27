@@ -29,17 +29,12 @@ spec:
       - env:
         - name: TZ
           value: {{ $root.Values.common.timezone }}
-# {{- if eq $k "sabnzbd" }}
-#         - name: SABNZBD_UID
-#           value: {{ $root.Values.common.PUID | quote }}
-#         - name: SABNZBD_GID
-#           value: {{ $root.Values.common.PUID | quote }}
-# {{- else }}
         - name: PUID
           value: {{ $root.Values.common.PUID | quote }}
         - name: PGID
           value: {{ $root.Values.common.PGID | quote }}
-# {{- end }}
+        - name: UMASK
+          value: "022"
         image: linuxserver/{{ $k }}:{{ .image_tag }}
         name: {{ $k }}
         imagePullPolicy: Always
@@ -79,12 +74,12 @@ spec:
 {{- if (or (eq $k "sonarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge")) }}
         - mountPath: /tv
           name: usenet-media
-          subPath: media/tv
+          subPath: tv
 {{- end }}
 {{- if (or (eq $k "radarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge")) }}
         - mountPath: /movies
           name: usenet-media
-          subPath: media/movies
+          subPath: movies
 {{- end }}
 {{- if eq $k "sabnzbd" }}
         - mountPath: /incomplete-downloads
@@ -116,12 +111,12 @@ spec:
 {{- if (or (eq $k "sonarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge")) }}
         - mountPath: /tv
           name: usenet-media
-          subPath: media/tv
+          subPath: tv
 {{- end }}
 {{- if (or (eq $k "radarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge")) }}
         - mountPath: /movies
           name: usenet-media
-          subPath: media/movies
+          subPath: movies
 {{- end }}
 {{- if eq $k "sabnzbd" }}
         - mountPath: /incomplete-downloads
@@ -137,8 +132,6 @@ spec:
           runAsGroup: 0
           runAsUser: 0
       securityContext:
-        runAsGroup: 1000
-        runAsUser: 1000  
         fsGroup: 1000
       volumes:
       - hostPath:
