@@ -35,21 +35,27 @@ spec:
           value: {{ $root.Values.common.PGID | quote }}
         - name: UMASK
           value: "022"
-        image: linuxserver/{{ $k }}:{{ .image_tag }}
+      {{- if eq $k "audiobookshelf" }}
+        - name: AUDIOBOOKSHELF_UID
+          value: "99"
+        - name: AUDIOBOOKSHELF_GID
+          value: "100"
+      {{- end }}
+        image: {{ .repo }}/{{ $k }}:{{ .image_tag }}
         name: {{ $k }}
         imagePullPolicy: Always
         ports:
         - containerPort: {{ .webui_port }}
           name: webui
-{{- if eq $k "deluge" }}
+      {{- if eq $k "deluge" }}
         - containerPort: {{ .torrent_port }}
           name: torrent-tcp
           protocol: TCP
         - containerPort: {{ .torrent_port }}
           name: torrent-udp
           protocol: UDP
-{{- end }}
-{{- if (or (eq $k "sonarr") (eq $k "radarr")) }}
+      {{- end }}
+      {{- if (or (eq $k "sonarr") (eq $k "radarr")) }}
         readinessProbe:
           exec:
             command:
@@ -66,35 +72,53 @@ spec:
             - curl "http://localhost:{{ .webui_port }}/api/health?ApiKey=$(sed -ne '/ApiKey/{s/.*<ApiKey>\(.*\)<\/ApiKey>.*/\1/p;q;}' < /config/config.xml)"
           initialDelaySeconds: 30
           periodSeconds: 10
-{{- end }}
+      {{- end }}
         volumeMounts:
         - mountPath: /config
           name: usenet-config
           subPath: {{ $k }}
-{{- if (or (eq $k "sonarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge")) }}
-        - mountPath: /tv
+        - mountPath: /arr_data
           name: usenet-media
-          subPath: tv
+# {{- if (or (eq $k "sonarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge")) }}
+#         - mountPath: /tv
+#           name: usenet-media
+#           subPath: tv
+# {{- end }}
+# {{- if (or (eq $k "radarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge")) }}
+#         - mountPath: /movies
+#           name: usenet-media
+#           subPath: movies
+# {{- end }}
+{{- if eq $k "readarr" }}
+        - mountPath: /books
+          name: usenet-media
+          subPath: books
 {{- end }}
-{{- if (or (eq $k "radarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge")) }}
-        - mountPath: /movies
+{{- if eq $k "audiobookshelf" }}
+        - mountPath: /metadata
           name: usenet-media
-          subPath: movies
+          subPath: books/metadata
+{{- end }}
+{{- if eq $k "audiobookshelf" }}
+        - mountPath: /audiobooks
+          name: usenet-media
+          subPath: books
 {{- end }}
 {{- if eq $k "sabnzbd" }}
         - mountPath: /incomplete-downloads
           name: usenet-ssd
           subPath: incomplete
 {{- end }}
-{{- if (or (eq $k "sonarr") (eq $k "radarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge")) }}
-        - mountPath: /downloads
-          name: usenet-media
-          subPath: downloads
-{{- end }}
+# {{- if (or (eq $k "sonarr") (eq $k "radarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge") (eq $k "readarr")) }}
+#         - mountPath: /downloads
+#           name: usenet-media
+#           subPath: downloads
+# {{- end }}
       initContainers:
       - command: ["/bin/sh", "-c"]
         args:
           - chown -R 1000:1000 /config;
+            chown -R 1000:1000 /arr-data;
 {{- if (or (eq $k "sonarr") (eq $k "sabnzbd") (eq $k "deluge") (eq $k "bazarr")) }}
             chown -R 1000:1000 /tv;
 {{- end }}
@@ -108,26 +132,47 @@ spec:
         - mountPath: /config
           name: usenet-config
           subPath: {{ $k }}
-{{- if (or (eq $k "sonarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge")) }}
-        - mountPath: /tv
+        - mountPath: /arr_data
           name: usenet-media
-          subPath: tv
+# {{- if eq $k "deluge" }}
+#         - mountPath: /deluge
+#           name: usenet-media
+#           subPath: deluge
+# {{- end }}
+# {{- if eq $k "sabnzbd" }}
+#         - mountPath: /sabnzbd
+#           name: usenet-media
+#           subPath: sabnzbd
+# {{- end }}
+# {{- if (or (eq $k "sonarr") (eq $k "bazarr") (eq $k "radarr")) }}
+#         - mountPath: /data
+#           name: usenet-media
+# {{- end }}
+{{- if eq $k "readarr" }}
+        - mountPath: /books
+          name: usenet-media
+          subPath: books
 {{- end }}
-{{- if (or (eq $k "radarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge")) }}
-        - mountPath: /movies
+{{- if eq $k "audiobookshelf" }}
+        - mountPath: /metadata
           name: usenet-media
-          subPath: movies
+          subPath: books/metadata
+{{- end }}
+{{- if eq $k "audiobookshelf" }}
+        - mountPath: /audiobooks
+          name: usenet-media
+          subPath: books
 {{- end }}
 {{- if eq $k "sabnzbd" }}
         - mountPath: /incomplete-downloads
           name: usenet-ssd
           subPath: incomplete
 {{- end }}
-{{- if (or (eq $k "sonarr") (eq $k "radarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge")) }}
-        - mountPath: /downloads
-          name: usenet-media
-          subPath: downloads
-{{- end }}
+# {{- if (or (eq $k "sonarr") (eq $k "radarr") (eq $k "bazarr") (eq $k "sabnzbd") (eq $k "deluge") (eq $k "readarr")) }}
+#         - mountPath: /downloads
+#           name: usenet-media
+#           subPath: downloads
+# {{- end }}
         securityContext:
           runAsGroup: 0
           runAsUser: 0
@@ -135,7 +180,7 @@ spec:
         fsGroup: 1000
       volumes:
       - hostPath:
-          path: /storagebox
+          path: /storagebox/arr_data
           type: DirectoryOrCreate
         name: usenet-media
       - hostPath:

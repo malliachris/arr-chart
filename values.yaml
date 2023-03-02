@@ -1,7 +1,16 @@
 arr_elements:
+  audiobookshelf:
+    enabled: true
+    webui_port: 80
+    repo: advplyr
+    image_tag: latest
+    ingress_url: audiobooks.mallia.mt
+    ingress_port: 80
+
   sonarr:
     enabled: true
     webui_port: 8989
+    repo: linuxserver
     image_tag: amd64-latest
     ingress_url: sonarr.mallia.mt
     ingress_port: 80
@@ -9,13 +18,23 @@ arr_elements:
   radarr:
     enabled: true
     webui_port: 7878
+    repo: linuxserver
     image_tag: amd64-latest
     ingress_url: radarr.mallia.mt
     ingress_port: 80
 
+  tautulli:
+    enabled: true
+    webui_port: 8181
+    repo: linuxserver
+    image_tag: latest
+    ingress_url: tautulli.mallia.mt
+    ingress_port: 80
+
   readarr:
-    enabled: false
+    enabled: true
     webui_port: 8787
+    repo: linuxserver
     image_tag: amd64-develop
     ingress_url: readarr.mallia.mt
     ingress_port: 80
@@ -23,6 +42,7 @@ arr_elements:
   bazarr:
     enabled: false
     webui_port: 6767
+    repo: linuxserver
     image_tag: amd64-latest
     ingress_url: bazarr.mallia.mt
     ingress_port: 80
@@ -30,6 +50,7 @@ arr_elements:
   prowlarr:
     enabled: true
     webui_port: 9696
+    repo: linuxserver
     image_tag: develop
     ingress_url: prowlarr.mallia.mt
     ingress_port: 80
@@ -37,14 +58,16 @@ arr_elements:
   sabnzbd:
     enabled: true
     webui_port: 8080
-    image_tag: amd64-latest
+    repo: linuxserver
+    image_tag: amd64-3.5.2
     ingress_url: sabnzbd.mallia.mt
     ingress_port: 80
 
   deluge:
     enabled: true
     webui_port: 8112
-    torrent_port: 58846
+    torrent_port: 31881
+    repo: linuxserver
     image_tag: amd64-latest
     ingress_url: deluge.mallia.mt
     ingress_port: 80

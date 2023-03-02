@@ -1,0 +1,18 @@
+{{- if .Values.arr_elements.deluge.enabled }}
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: deluge-nodeport
+  namespace: usenet
+spec:
+  type: NodePort
+  selector:
+    app: usenet
+    run: deluge
+  ports:
+    - port: {{ .Values.arr_elements.deluge.torrent_port }}
+      targetPort: {{ .Values.arr_elements.deluge.torrent_port }}
+      nodePort: {{ .Values.arr_elements.deluge.torrent_port }}
+
+{{- end }}
