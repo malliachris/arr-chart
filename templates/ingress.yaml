@@ -11,8 +11,11 @@ metadata:
     app: usenet
   name: {{ $k }}-ingress
   namespace: {{ $root.Values.common.namespace }}
-  annotations:  
+  annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
+  {{- if $root.Values.common.tls_enabled }}
+    cert-manager.io/cluster-issuer: {{ $root.Values.common.cluster_issuer | default "letsencrypt-production" }}
+  {{- end }}
   {{- if eq $k "audiobookshelf" }}
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
@@ -30,6 +33,12 @@ metadata:
   {{- end }}
 spec:
   ingressClassName: nginx
+  {{- if $root.Values.common.tls_enabled }}
+  tls:
+  - hosts:
+    - {{ .ingress_url }}
+    secretName: {{ $k }}-tls
+  {{- end }}
   rules:
   - host: {{ .ingress_url }}
     http:

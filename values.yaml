@@ -77,3 +77,5 @@ common:
   timezone: Europe/Rome
   PUID: "1000"
   PGID: "1000"
+  tls_enabled: false
+  cluster_issuer: letsencrypt-production
