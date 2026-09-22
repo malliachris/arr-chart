@@ -117,7 +117,8 @@ spec:
       initContainers:
       - command: ["/bin/sh", "-c"]
         args:
-          - chown -R 1000:1000 /config;
+          - echo "waiting for NAS mount..."; while [ ! -f /arr_data/.nas-online ]; do sleep 5; done; echo "NAS mount confirmed";
+            chown -R 1000:1000 /config;
             chown -R 1000:1000 /arr-data;
 {{- if (or (eq $k "sonarr") (eq $k "sabnzbd") (eq $k "deluge") (eq $k "bazarr")) }}
             chown -R 1000:1000 /tv;
