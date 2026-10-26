@@ -127,7 +127,8 @@ spec:
             chown -R 1000:1000 /movies;
 {{- end }}
             echo start;[[ ! -f /config/config.xml ]] && echo '<Config><UrlBase>/</UrlBase></Config>'> /config/config.xml;echo end;
-        image: busybox
+        image: busybox:1.37
+        imagePullPolicy: IfNotPresent
         name: chown-config
         volumeMounts:
         - mountPath: /config
